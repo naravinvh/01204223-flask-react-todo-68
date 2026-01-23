@@ -4,11 +4,11 @@ import viteLogo from '/vite.svg'
 import './App.css'
 
 function App() {
-  const TODOLIST_API_URL = 'http://localhost:5000/api/todos/';
+   const TODOLIST_API_URL = 'http://127.0.0.1:5000/api/todos/';
 
   const [todoList, setTodoList] = useState([]);
   const [newTitle, setNewTitle] = useState("");
-
+  const [newComments, setNewComments] = useState({});
   useEffect(() => {
     fetchTodoList();
   }, []);
@@ -74,17 +74,68 @@ function App() {
     }
   }
 
+    async function addNewComment(todoId) {
+    try {
+      const url = `${TODOLIST_API_URL}${todoId}/comments/`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 'message': newComments[todoId] || "" }),
+      });
+      if (response.ok) {
+        setNewComments({ ...newComments, [todoId]: "" });
+        await fetchTodoList();
+      }
+    } catch (error) {
+      console.error("Error adding new comment:", error);
+    }
+  }
+
   return (
     <>
       <h1>Todo List</h1>
       <ul>
         {todoList.map(todo => (
-          <li key={todo.id}>
-            <span className={todo.done ? "done" : ""}>{todo.title}</span>
-            <button onClick={() => {toggleDone(todo.id)}}>Toggle</button>
-            <button onClick={() => {deleteTodo(todo.id)}}>❌</button>
-          </li>
-        ))}
+  <li key={todo.id}>
+    <span className={todo.done ? "done" : ""}>{todo.title}</span>
+    <button onClick={() => toggleDone(todo.id)}>Toggle</button>
+    <button onClick={() => deleteTodo(todo.id)}>❌</button>
+
+    {(todo.comments) && (todo.comments.length > 0) && (
+      <>
+        <b>Comments:</b>
+        <ul>
+          {todo.comments.map(comment => (
+            <li key={comment.id}>{comment.message}</li>
+          ))}
+        </ul>
+      </>
+    )}
+
+    {/* ===== เพิ่มส่วนนี้ ===== */}
+    <div className="new-comment-forms">
+  <input
+    type="text"
+    value={newComments[todo.id] || ""}
+    onChange={(e) => {
+      const value = e.target.value;
+      setNewComments({
+        ...newComments,
+        [todo.id]: value
+      });
+    }}
+  />
+  <button onClick={() => addNewComment(todo.id)}>
+    Add Comment
+  </button>
+</div>
+
+    {/* ====================== */}
+  </li>
+))}
+
       </ul>
       New: <input type="text" value={newTitle} onChange={(e) => {setNewTitle(e.target.value)}} />
       <button onClick={() => {addNewTodo()}}>Add</button>
