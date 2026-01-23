@@ -2,6 +2,8 @@ from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from flask_migrate import Migrate
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import relationship
 
 app = Flask(__name__)
 CORS(app)
@@ -16,16 +18,54 @@ migrate = Migrate(app, db)
 
 
 class TodoItem(db.Model):
+    __tablename__ = "todo_item"
+
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
     done = db.Column(db.Boolean, default=False)
+
+    comments = relationship("Comment", back_populates="todo")
 
     def to_dict(self):
         return {
             "id": self.id,
             "title": self.title,
-            "done": self.done
+            "done": self.done,
+            "comments": [c.to_dict() for c in self.comments]
         }
+
+class Comment(db.Model):
+    __tablename__ = "comment"
+
+    id = db.Column(db.Integer, primary_key=True)
+    message = db.Column(db.String(250), nullable=False)
+
+    todo_id = db.Column(
+        db.Integer,
+        db.ForeignKey("todo_item.id"),
+        nullable=False
+    )
+
+    todo = relationship("TodoItem", back_populates="comments")
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "message": self.message,
+            "todo_id": self.todo_id
+        }
+
+
+INITIAL_TODOS = [
+    TodoItem(title='Learn Flask'),
+    TodoItem(title='Build a Flask App'),
+]
+
+with app.app_context():
+    if TodoItem.query.count() == 0:
+        for item in INITIAL_TODOS:
+            db.session.add(item)
+        db.session.commit()
 
 
 @app.route("/api/todos/", methods=["GET"])
