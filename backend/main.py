@@ -16,7 +16,6 @@ db.init_app(app)
 
 migrate = Migrate(app, db)
 
-
 class TodoItem(db.Model):
     __tablename__ = "todo_item"
 
@@ -24,7 +23,11 @@ class TodoItem(db.Model):
     title = db.Column(db.String(200), nullable=False)
     done = db.Column(db.Boolean, default=False)
 
-    comments = relationship("Comment", back_populates="todo")
+    comments = relationship(
+        "Comment",
+        back_populates="todo",
+        cascade="all, delete"
+    )
 
     def to_dict(self):
         return {
@@ -33,6 +36,7 @@ class TodoItem(db.Model):
             "done": self.done,
             "comments": [c.to_dict() for c in self.comments]
         }
+
 
 class Comment(db.Model):
     __tablename__ = "comment"
