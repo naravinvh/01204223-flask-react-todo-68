@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import TodoItem from "./TodoItem.jsx";
+import TodoItem from "./src/TodoItem.jsx";
 import "./App.css";
 
 const TODOLIST_API_URL = "http://127.0.0.1:5000/api/todos/";
