@@ -7,46 +7,29 @@ from flask_bcrypt import generate_password_hash, check_password_hash
 class Base(DeclarativeBase):
     pass
 
-db = SQLAlchemy(model_class=Base)
+db = SQLAlchemy(model_class=Base) 
 
-class User(db.Model):
-    id = mapped_column(Integer, primary_key=True)
-    username = mapped_column(String(100), unique=True)
-    full_name = mapped_column(String(200))
-    hashed_password = mapped_column(String(100))
-
-    def set_password(self, password):
-        self.hashed_password = generate_password_hash(password)
-
-    def check_password(self, password):
-        return check_password_hash(self.hashed_password, password)
-    
 class TodoItem(db.Model):
-    __tablename__ = "todo_item"
-
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    title: Mapped[str] = mapped_column(String(200))
+    title: Mapped[str] = mapped_column(String(100))
     done: Mapped[bool] = mapped_column(default=False)
 
-    comments: Mapped[list["Comment"]] = relationship(
-        back_populates="todo",
-        cascade="all, delete"
-    )
+    ##### เพิ่มส่วน relationship  ซึ่งตรงนี้จะไม่กระทบ schema database เลย (เพราะว่าไม่มีการ map ไปยังคอลัมน์ใดๆ)
+    comments: Mapped[list["Comment"]] = relationship(back_populates="todo")
 
     def to_dict(self):
         return {
             "id": self.id,
             "title": self.title,
             "done": self.done,
-            "comments": [c.to_dict() for c in self.comments]
+            "comments": [
+                comment.to_dict() for comment in self.comments
+            ]
         }
-
 class Comment(db.Model):
-    __tablename__ = "comment"
-
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     message: Mapped[str] = mapped_column(String(250))
-    todo_id: Mapped[int] = mapped_column(ForeignKey("todo_item.id"))
+    todo_id: Mapped[int] = mapped_column(ForeignKey('todo_item.id'))
 
     todo: Mapped["TodoItem"] = relationship(back_populates="comments")
 
@@ -56,3 +39,15 @@ class Comment(db.Model):
             "message": self.message,
             "todo_id": self.todo_id
         }
+
+
+class User(db.Model):
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    username: Mapped[str] = mapped_column(String(100), unique=True)
+    full_name: Mapped[str] = mapped_column(String(200))
+    hashed_password: Mapped[str] = mapped_column(String(100))
+    def set_password(self, password):
+        self.hashed_password = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.hashed_password, password)
