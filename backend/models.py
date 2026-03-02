@@ -2,12 +2,25 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy import Integer, String, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from flask_bcrypt import generate_password_hash, check_password_hash
 
 class Base(DeclarativeBase):
     pass
 
 db = SQLAlchemy(model_class=Base)
 
+class User(db.Model):
+    id = mapped_column(Integer, primary_key=True)
+    username = mapped_column(String(100), unique=True)
+    full_name = mapped_column(String(200))
+    hashed_password = mapped_column(String(100))
+
+    def set_password(self, password):
+        self.hashed_password = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.hashed_password, password)
+    
 class TodoItem(db.Model):
     __tablename__ = "todo_item"
 
