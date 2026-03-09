@@ -15,7 +15,7 @@ class TodoItem(db.Model):
     done: Mapped[bool] = mapped_column(default=False)
 
     ##### เพิ่มส่วน relationship  ซึ่งตรงนี้จะไม่กระทบ schema database เลย (เพราะว่าไม่มีการ map ไปยังคอลัมน์ใดๆ)
-    comments: Mapped[list["Comment"]] = relationship(back_populates="todo")
+    comments: Mapped[list["Comment"]] = relationship(back_populates="todo", cascade="all, delete-orphan")
 
     def to_dict(self):
         return {
