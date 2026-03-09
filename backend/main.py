@@ -1,6 +1,7 @@
 from pprint import pp
 import os
 import sys
+from pathlib import Path
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
@@ -17,6 +18,14 @@ from flask_jwt_extended import JWTManager
 
 import click
 
+
+try:
+    from dotenv import load_dotenv
+
+    load_dotenv(dotenv_path=Path(__file__).with_name(".env"))
+except Exception:
+    # Keep working even if python-dotenv isn't available
+    pass
 
 
 app = Flask(__name__)
