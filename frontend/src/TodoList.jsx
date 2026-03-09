@@ -1,6 +1,4 @@
 import { useState, useEffect } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
 import TodoItem from './TodoItem.jsx'
 import { useAuth } from './context/AuthContext.jsx';
@@ -10,8 +8,6 @@ function TodoList({apiUrl}) {
 
   const [todoList, setTodoList] = useState([]);
   const [newTitle, setNewTitle] = useState("");
-
-  const [newComments, setNewComments] = useState({});
   const { username, accessToken, logout } = useAuth();
 
   useEffect(() => {

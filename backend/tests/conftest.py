@@ -10,12 +10,13 @@ import pytest
 from main import app as flask_app
 from models import db
 
+
 @pytest.fixture
 def app():
     flask_app.config.update(
         {
-            'TESTING': True,
-            'SQLALCHEMY_DATABASE_URI': f'sqlite:///:memory:',
+            "TESTING": True,
+            "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
         }
     )
 
@@ -25,9 +26,11 @@ def app():
 
     return flask_app
 
+
 @pytest.fixture
 def client(app):
     return app.test_client()
+
 
 @pytest.fixture
 def app_context(app):

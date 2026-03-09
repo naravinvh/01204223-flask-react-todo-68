@@ -1,5 +1,6 @@
 from pprint import pp
 import os
+import sys
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
@@ -20,16 +21,20 @@ import click
 
 app = Flask(__name__)
 CORS(app)
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI', 'sqlite:///todos.db') 
-app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY','')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv(
+    'SQLALCHEMY_DATABASE_URI',
+    'sqlite:///todos.db',
+)
+app.config['JWT_SECRET_KEY'] = os.getenv(
+    'JWT_SECRET_KEY',
+    'dev-secret-change-me',
+)
 
 class Base(DeclarativeBase):
   pass
 
 db.init_app(app)                                                     # แก้จาก db = SQLAlchemy(app, model_class=Base)
 migrate = Migrate(app, db)
-
-app.config['JWT_SECRET_KEY'] = 'fdsjkfjioi2rjshr2345hrsh043j5oij5545'
 jwt = JWTManager(app)
 
 """
@@ -67,8 +72,9 @@ class Comment(db.Model):
         }
 """
 
-with app.app_context():
-    db.create_all()
+if 'pytest' not in sys.modules and 'PYTEST_CURRENT_TEST' not in os.environ:
+    with app.app_context():
+        db.create_all()
 """
 INITIAL_TODOS = [
     TodoItem(title='Learn Flask'),

@@ -4,7 +4,7 @@ import { useState } from 'react'
 function TodoItem({todo, toggleDone, deleteTodo, addNewComment}) {
     const [newComment, setNewComment] = useState("");      // เพิ่ม state newComment
     return (
-        <li key={todo.id}>
+        <li>
             <span className={todo.done ? "done" : ""}>{todo.title}</span>
             <button onClick={() => {toggleDone(todo.id)}}>Toggle</button>
             <button onClick={() => {deleteTodo(todo.id)}}>❌</button>
