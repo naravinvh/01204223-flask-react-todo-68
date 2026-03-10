@@ -5,6 +5,7 @@ import { useAuth } from './context/AuthContext.jsx';
 
 function TodoList({apiUrl}) {
   const TODOLIST_API_URL = apiUrl;
+  const API_BASE_URL = TODOLIST_API_URL.replace('todos/', '');
 
   const [todoList, setTodoList] = useState([]);
   const [newTitle, setNewTitle] = useState("");
@@ -97,6 +98,20 @@ function TodoList({apiUrl}) {
     }
   } 
 
+  async function deleteComment(commentId) {
+    const url = `${API_BASE_URL}comments/${commentId}/`;
+    try {
+      const response = await fetch(url, {
+        method: 'DELETE',
+      });
+      if (response.ok) {
+        await fetchTodoList();
+      }
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+    }
+  }
+
 
   return (
     <>
@@ -109,6 +124,7 @@ function TodoList({apiUrl}) {
             toggleDone={toggleDone}
             deleteTodo={deleteTodo}
             addNewComment={addNewComment}
+            deleteComment={deleteComment}
           />
         ))}
       </ul>

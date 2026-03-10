@@ -176,6 +176,14 @@ def add_comment(todo_id):
     return jsonify(comment.to_dict())
 
 
+@app.route('/api/comments/<int:comment_id>/', methods=['DELETE'])
+def delete_comment(comment_id):
+    comment = Comment.query.get_or_404(comment_id)
+    db.session.delete(comment)
+    db.session.commit()
+    return jsonify({'message': 'Comment deleted successfully'})
+
+
 @app.route('/api/login/', methods=['POST'])
 def login():
     data = request.get_json()

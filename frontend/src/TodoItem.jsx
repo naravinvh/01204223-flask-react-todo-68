@@ -1,7 +1,7 @@
 import './App.css'
 import { useState } from 'react'
 
-function TodoItem({todo, toggleDone, deleteTodo, addNewComment}) {
+function TodoItem({todo, toggleDone, deleteTodo, addNewComment, deleteComment}) {
     const [newComment, setNewComment] = useState("");      // เพิ่ม state newComment
     return (
         <li>
@@ -13,7 +13,12 @@ function TodoItem({todo, toggleDone, deleteTodo, addNewComment}) {
                  <b>{todo.comments.length} comments:</b>
                 <ul>
                 {todo.comments.map(comment => (
-                    <li key={comment.id}>{comment.message}</li>
+                    <li key={comment.id}>
+                      {comment.message}{' '}
+                      {deleteComment && (
+                        <button onClick={() => deleteComment(comment.id)}>🗑</button>
+                      )}
+                    </li>
                 ))}
                 </ul>
             </>

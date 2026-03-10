@@ -100,4 +100,26 @@ describe('TodoItem', () => {
     // assert
     expect(onAddNewComment).toHaveBeenCalledWith(baseTodo.id, 'New comment');
   });
+  it('calls deleteComment when delete comment button is clicked', () => {
+    const onDeleteComment = vi.fn();
+    const todoWithComment = {
+      ...baseTodo,
+      comments: [
+        {id: 1, message: 'First comment'},
+      ]
+    };
+    render(
+      <TodoItem
+        todo={todoWithComment}
+        toggleDone={() => {}}
+        deleteTodo={() => {}}
+        addNewComment={() => {}}
+        deleteComment={onDeleteComment}
+      />
+    );
+
+    const deleteButtons = screen.getAllByRole('button', { name: /🗑/i });
+    deleteButtons[0].click();
+    expect(onDeleteComment).toHaveBeenCalledWith(1);
+  });
 });
