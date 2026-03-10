@@ -2,7 +2,7 @@ from pprint import pp
 import os
 import sys
 from pathlib import Path
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
@@ -19,6 +19,7 @@ from flask_jwt_extended import JWTManager
 import click
 
 
+# Load environment variables from .env during local development (optional)
 try:
     from dotenv import load_dotenv
 
@@ -27,16 +28,27 @@ except Exception:
     # Keep working even if python-dotenv isn't available
     pass
 
+# Load local_config for deployment / non-env defaults
+try:
+    from local_config import CONFIG_DB_URI, CONFIG_JWT_SECRET
+except Exception:
+    CONFIG_DB_URI = "sqlite:///todos.db"
+    CONFIG_JWT_SECRET = "dev-secret-change-me"
+
 
 app = Flask(__name__)
 CORS(app)
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv(
-    'SQLALCHEMY_DATABASE_URI',
-    'sqlite:///todos.db',
-)
-app.config['JWT_SECRET_KEY'] = os.getenv(
-    'JWT_SECRET_KEY',
-    'dev-secret-change-me',
+
+# During pytest, force an in-memory sqlite database to avoid hitting MySQL
+if "pytest" in sys.modules or "PYTEST_CURRENT_TEST" in os.environ:
+    db_uri = "sqlite:///:memory:"
+else:
+    db_uri = os.getenv("SQLALCHEMY_DATABASE_URI", CONFIG_DB_URI)
+
+app.config["SQLALCHEMY_DATABASE_URI"] = db_uri
+app.config["JWT_SECRET_KEY"] = os.getenv(
+    "JWT_SECRET_KEY",
+    CONFIG_JWT_SECRET,
 )
 
 class Base(DeclarativeBase):
@@ -191,3 +203,20 @@ def create_user(username, full_name, password):
     db.session.add(user)
     db.session.commit()
     click.echo(f"User {username} created successfully.")
+
+
+# Serve built React frontend from backend/frontend-static
+@app.route("/", defaults={"path": ""})
+@app.route("/<path:path>")
+def serve_frontend(path):
+    static_dir = os.path.join(app.root_path, "frontend-static")
+    requested_path = os.path.join(static_dir, path)
+
+    if path and os.path.isfile(requested_path):
+        return send_from_directory("frontend-static", path)
+
+    return send_from_directory("frontend-static", "index.html")
+
+
+if __name__ == "__main__":
+    app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))

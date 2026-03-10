@@ -13,6 +13,7 @@ from models import db
 
 @pytest.fixture
 def app():
+    # Use the real app (with routes) but force a local sqlite DB for tests
     flask_app.config.update(
         {
             "TESTING": True,
